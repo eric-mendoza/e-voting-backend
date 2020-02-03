@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\ReadVotes;
 use Carbon\Carbon;
 use GuzzleHttp\Exception\RequestException;
 use Illuminate\Http\Request;
@@ -11,7 +12,7 @@ use Psr\Http\Message\ResponseInterface;
 
 class VotingController extends Controller
 {
-    public function VoteToBlockchain(Request $request) {
+    public function VoteToBlockchain() {
         $uri = 'http://localhost:8888/v1';
         $wallet_uri = 'http://localhost:8900/v1';
         $expiration = Carbon::now()->addMinute();
@@ -177,9 +178,18 @@ class VotingController extends Controller
                     ]
                 ]
             ]);
+//        dd($response);
         $response = json_decode($response->getBody());
 
 
         return json_encode(["ok" => $response->transaction_id]);
+    }
+
+
+    public function VoteFromFrontend() {
+
+        // Add to RabbitMQ
+        ReadVotes::dispatch();
+        return json_encode(["ok"]);
     }
 }
